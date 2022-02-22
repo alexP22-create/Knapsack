@@ -1,0 +1,57 @@
+POSTOLACHE ALEXANDRU-GABRIEL 331CB
+
+								TEMA 1 APD
+
+individual.h:
+	Am adaugat campul sum_chromozomes ca odata cu calcularea fitnessului sa se
+calculeze si nr de chromozomi de 1 folositi la alegerea ordinii de sortare din
+functia cmpfunct. De aceea pot elimina for-ul initial neschimband logica functiei.
+
+tema1.c:
+
+	Structura info_passed este folosita la gruparea informatiilor trimise catre
+thread_function.
+	Pt a putea apela bariera din thread_function si functiile apelate de thread_function
+o voi trimite prin referinta, voi trimite adresa ei. De aceea celelate functii si structura
+au pthread_barrier_t* barrier. Daca as fi trimis doar barrier si nu &barrier,
+threadurile s-ar fi blocat la pthread_barrier_wait.
+
+	-> main():
+	P se citeste in read_input si se trimite prin referinta.
+	Dupa citire se initializeaza bariera si cele 2 generatii. Se initializeaza
+in main ca sa poata fi accesate de toate threadurile.
+	Pt fiecare thread se aloca o zona de memorie care contine toate informatiile
+de care are nevoies.
+	La finalizarea threadurilor se va afisa pe ecran primul element din generatia
+curenta si se dezaloca memorie. 
+
+	->thread_function():
+	Se obtin informatiile facand cast la void*.
+	Apoi toate elementele unei generatii se impart la fiecare thread si se ruleaza
+algoritmul genetic paralelizat.
+
+
+genetic_algorithm.h:
+
+	Am adaugat functia de sortare si de min si am adaugat parametrii noi la
+run_generic_algorithm() si la compute_fitness_function().
+
+
+genetic_algorithm.c:
+	-> cmpfunct(): Din moment ce am adaugat campul sum_chromozomes la structura individual,
+iar acest camp se calculeaza cand se calculeaza si fitness-ul pot elimina for-ul initial
+reducand timpul de executare al functiei pastrand ac logica.
+	-> oets():
+	Se implementeaza bubble sort paralelizat de la lab3. Se parcurg separat elementele
+din 2 in 2 si se asteapta toate thread-urile intre parcurgeri pt a nu se folosi un individ
+care inca nu este la curent.
+
+	->run_generic_algorithm():
+	Se initializeaza indivizii care apartin the thread-ul curent din generatiile
+curenta si cea urmatoare.
+	Pt fiecare generatie, are loc procesul de selectie. Dupa ce se calculeaza valorile
+de fitness se sorteaza paralelizat toata generatia curenta. 
+	Ca sa se pastreze cei 30% de copii in mod optim, se imparte nr lor la fiecare thread
+si fiecare thread isi copiaza proprii indivizi la generatia urmatoare. La fel se procedeaza
+si la mutatii si crossover, nr de indivizi afectati fiind impartit la nr de threaduri.
+	La fiecare generatie multiplu de 5 se printeaza cel mai mare nr doar 1 data, de thread-ul 0.
